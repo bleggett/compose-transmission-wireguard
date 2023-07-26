@@ -1,38 +1,37 @@
 services:
   wireguard:
-    image: ghcr.io/linuxserver/wireguard
+    image: qmcgaw/gluetun
     container_name: wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
     environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/Stockholm
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_PROVIDER=protonvpn
     ports:
       - 9091:9091/tcp
     volumes:
-      - ./wg0.conf:/config/wg0.conf
+      - /mnt/Torrents/wg-docker/wg0.conf:/gluetun/wireguard/wg0.conf
       - /lib/modules:/lib/modules
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-      - net.ipv4.conf.all.src_valid_mark=1
-    restart: unless-stopped
+    restart: always 
   transmission:
-    image: ghcr.io/linuxserver/transmission
+    image: ghcr.io/linuxserver/transmission:4.0.3
     container_name: transmission
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Europe/Stockholm
-      - TRANSMISSION_WEB_HOME=/combustion-release/
-      - USER=<transmission-user>
-      - PASS=<transmission-password>
+      - TZ=America/New_York
+      - TRANSMISSION_WEB_HOME=/config/webtheme
+      - USER=
+      - PASS=
     volumes:
-      - ./config:/config
-      - ./downloads:/downloads
-      - ./watch:/watch
-      - ./dark-combustion/main.77f9cffc.css:/combustion-release/main.77f9cffc.css
+      - /mnt/Torrents/transmission-config:/config
+      - /mnt/Torrents/downloads:/downloads
+      - /mnt/Torrents/downloads/watch:/watch
     network_mode: "service:wireguard"
     depends_on: [ "wireguard", ]
-    restart: unless-stopped
+    restart: always
